@@ -80,11 +80,11 @@ const store = {
     }
 }
 
-let phoneNumber = "911234567890"
+let phoneNumber = "212637915359"
 let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
 
-global.botname = "KNIGHT BOT"
-global.themeemoji = "•"
+global.botname = "IsHaQ-md"
+global.themeemoji = "👾"
 
 const settings = require('./settings')
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
@@ -154,8 +154,8 @@ async function startXeonBotInc() {
                             forwardingScore: 1,
                             isForwarded: true,
                             forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363161513685998@newsletter',
-                                newsletterName: 'KnightBot MD',
+                                newsletterJid: '',
+                                newsletterName: 'IsHaQ-md',
                                 serverMessageId: -1
                             }
                         }
@@ -242,18 +242,18 @@ async function startXeonBotInc() {
         const { connection, lastDisconnect } = s
         if (connection == "open") {
             console.log(chalk.magenta(` `))
-            console.log(chalk.yellow(`🌿Connected to => ` + JSON.stringify(XeonBotInc.user, null, 2)))
+            console.log(chalk.yellow(`🌿 متصل ب => ` + JSON.stringify(XeonBotInc.user, null, 2)))
             
             const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
             await XeonBotInc.sendMessage(botNumber, { 
-                text: `🤖 Bot Connected Successfully!\n\n⏰ Time: ${new Date().toLocaleString()}\n✅ Status: Online and Ready!
-                \n✅Make sure to join below channel`,
+                text: `🤖 اتصل البوت بنجاح!\n\n⏰ Time: ${new Date().toLocaleString()}\n✅ الحالة: متصل و جاهز!
+                \n✅ حاول انك ماتدخل للجروبات ذي و تحية لجواد ملك البوتات `,
                 contextInfo: {
                     forwardingScore: 1,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: '120363161513685998@newsletter',
-                        newsletterName: 'KnightBot MD',
+                        newsletterName: 'IsHaQ-md',
                         serverMessageId: -1
                     }
                 }
@@ -262,11 +262,11 @@ async function startXeonBotInc() {
             await delay(1999)
             console.log(chalk.yellow(`\n\n                  ${chalk.bold.blue(`[ ${global.botname || 'KNIGHT BOT'} ]`)}\n\n`))
             console.log(chalk.cyan(`< ================================================== >`))
-            console.log(chalk.magenta(`\n${global.themeemoji || '•'} YT CHANNEL: MR UNIQUE HACKER`))
+            console.log(chalk.magenta(`\n${global.themeemoji || '•'} الانستا: @fang7x`))
             console.log(chalk.magenta(`${global.themeemoji || '•'} GITHUB: mrunqiuehacker`))
-            console.log(chalk.magenta(`${global.themeemoji || '•'} WA NUMBER: ${owner}`))
-            console.log(chalk.magenta(`${global.themeemoji || '•'} CREDIT: MR UNIQUE HACKER`))
-            console.log(chalk.green(`${global.themeemoji || '•'} 🤖 Bot Connected Successfully! ✅`))
+            console.log(chalk.magenta(`${global.themeemoji || '•'} رقم المالك: ${owner}`))
+            console.log(chalk.magenta(`${global.themeemoji || '•'} صنع بواسطة: جواد 🍻✨`))
+            console.log(chalk.green(`${global.themeemoji || '•'} 🤖 اتصل البوت بنجاح! ✅`))
         }
         if (
             connection === "close" &&
