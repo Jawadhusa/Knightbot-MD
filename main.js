@@ -98,8 +98,8 @@ const imagineCommand = require( ./commands/imagine );
 // الإعدادات العامة
 global.packname = settings.packname;
 global.author = settings.author;
-global.channelLink = "https://whatsapp.com/channel/0029Va90zAnIHphOuO8Msp3A";
-global.ytch = "Mr Unique Hacker";
+global.channelLink = "https://chat.whatsapp.com/HrMdlVfuQeP7ir8HnRnwUK";
+global.ytch = "Jawad 🍻✨";
 
 // معلومات القناة
 const channelInfo = {
@@ -108,7 +108,7 @@ const channelInfo = {
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
             newsletterJid:  120363161513685998@newsletter ,
-            newsletterName:  KnightBot MD ,
+            newsletterName:  IsHaQ-md ,
             serverMessageId: -1
         }
     }
