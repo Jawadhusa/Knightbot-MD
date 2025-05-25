@@ -12,6 +12,7 @@ const ffmpeg = require( fluent-ffmpeg );
 const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn } = require( ./lib/index );
 
 // استيراد الأوامر
+const booksCommand = require( ./commands/books );
 const tagAllCommand = require( ./commands/tagall );
 const helpCommand = require( ./commands/help );
 const banCommand = require( ./commands/ban );
