@@ -108,8 +108,8 @@ const channelInfo = {
         forwardingScore: 1,
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
-            newsletterJid:  120363161513685998@newsletter ,
-            newsletterName:  IsHaQ-md ,
+            newsletterJid:  "212637915359@newsletter" ,
+            newsletterName:  "IsHaQ-md" ,
             serverMessageId: -1
         }
     }
@@ -156,7 +156,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             // الرد أحيانًا لتجنب السبام
             if (Math.random() < 0.1) {
                 await sock.sendMessage(chatId, {
-                    text:  ❌ أنت محظور من استخدام البوت. تواصل مع المشرف لإلغاء الحظر. ,
+                    text:  "❌ أنت محظور من استخدام البوت. تواصل مع المشرف لإلغاء الحظر. ",
                     ...channelInfo
                 });
             }
@@ -205,7 +205,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             isBotAdmin = adminStatus.isBotAdmin;
 
             if (!isBotAdmin) {
-                await sock.sendMessage(chatId, { text:  يرجى جعل البوت مشرفًا لاستخدام أوامر المشرفين. , ...channelInfo });
+                await sock.sendMessage(chatId, { text: " يرجى جعل البوت مشرفًا لاستخدام أوامر المشرفين. ", ...channelInfo });
                 return;
             }
 
@@ -219,7 +219,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             ) {
                 if (!isSenderAdmin && !message.key.fromMe) {
                     await sock.sendMessage(chatId, {
-                        text:  عذرًا، فقط مشرفو المجموعة يمكنهم استخدام هذا الأمر. ,
+                        text: " عذرًا، فقط مشرفو المجموعة يمكنهم استخدام هذا الأمر. ",
                         ...channelInfo
                     });
                     return;
@@ -232,7 +232,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             // التحقق إذا كانت الرسالة من المالك (fromMe) أو من البوت نفسه
             if (!message.key.fromMe) {
                 await sock.sendMessage(chatId, {
-                    text:  ❌ هذا الأمر متاح فقط للمالك! ,
+                    text:  "❌ هذا الأمر متاح فقط للمالك!" ,
                     ...channelInfo
                 });
                 return;
@@ -280,10 +280,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await addCommandReaction(sock, message);
         }
     } catch (error) {
-        console.error( ❌ خطأ في معالج الرسائل: , error.message);
+        console.error( "❌ خطأ في معالج الرسائل:" , error.message);
         if (chatId) {
             await sock.sendMessage(chatId, {
-                text:  ❌ فشل في معالجة الأمر! ,
+                text: " ❌ فشل في معالجة الأمر!" ,
                 ...channelInfo
             });
         }
@@ -316,7 +316,7 @@ async function handleGroupParticipantUpdate(sock, update) {
 
             const data = JSON.parse(fs.readFileSync( ./data/userGroupData.json ));
             const welcomeData = data.welcome[id];
-            const welcomeMessage = welcomeData?.message ||  مرحبًا {user} في المجموعة! 🎉 ;
+            const welcomeMessage = welcomeData?.message || " مرحبًا {user} في المجموعة! 🎉 ";
 
             for (const participant of participants) {
                 const user = participant.split( @ )[0];
@@ -336,7 +336,7 @@ async function handleGroupParticipantUpdate(sock, update) {
 
             const data = JSON.parse(fs.readFileSync( ./data/userGroupData.json ));
             const goodbyeData = data.goodbye[id];
-            const goodbyeMessage = goodbyeData?.message ||  وداعًا {user} 👋 ;
+            const goodbyeMessage = goodbyeData?.message ||  "وداعًا {user} 👋" ;
 
             for (const participant of participants) {
                 const user = participant.split( @ )[0];
@@ -349,7 +349,7 @@ async function handleGroupParticipantUpdate(sock, update) {
             }
         }
     } catch (error) {
-        console.error( خطأ في handleGroupParticipantUpdate: , error);
+        console.error( "خطأ في handleGroupParticipantUpdate: ", error);
     }
 }
 
