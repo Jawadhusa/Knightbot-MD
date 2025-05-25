@@ -154,7 +154,7 @@ async function startXeonBotInc() {
                             forwardingScore: 1,
                             isForwarded: true,
                             forwardedNewsletterMessageInfo: {
-                                newsletterJid: '',
+                                newsletterJid: "120363161513685998@newsletter",
                                 newsletterName: 'IsHaQ-md',
                                 serverMessageId: -1
                             }
