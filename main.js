@@ -147,7 +147,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         // Only log command usage
         if (userMessage.startsWith('.')) {
-            console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
+            console.log(`📝 شوفوا الفحل ذا وش يكتب في ${isGroup ? 'ذا الخرابة (الجروب)' : 'الخاص، مسوي يستفرد فيني 😏'}: ${userMessage}`);
         }
 
         // Check if user is banned (skip ban check for unban command)
@@ -155,7 +155,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             // Only respond occasionally to avoid spam
             if (Math.random() < 0.1) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ You are banned from using the bot. Contact an admin to get unbanned.',
+                    text: '❌ أنت محظور يا حلو. رح ترجى الأدمن يفك عنك الحظر.',
                     ...channelInfo
                 });
             }
@@ -213,7 +213,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             isBotAdmin = adminStatus.isBotAdmin;
 
             if (!isBotAdmin) {
-                await sock.sendMessage(chatId, { text: 'Please make the bot an admin to use admin commands.', ...channelInfo }, {quoted: message});
+                await sock.sendMessage(chatId, { text: 'خلّني أدمن أول يا فحل، بعدين تأمر.', ...channelInfo }, {quoted: message});
                 return;
             }
 
@@ -227,7 +227,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             ) {
                 if (!isSenderAdmin && !message.key.fromMe) {
                     await sock.sendMessage(chatId, {
-                        text: 'Sorry, only group admins can use this command.',
+                        text: 'هالأمر للكبار بس يا بابا. (الأدمنز يعني)',
                         ...channelInfo
                     });
                     return;
@@ -240,7 +240,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             // Check if message is from owner (fromMe) or bot itself
             if (!message.key.fromMe) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ This command is only available for the owner!',
+                    text: '❌ هالأمر خاص بصاحبي الأنتيم (المطور)، مو لك.',
                     ...channelInfo
                 });
                 return;
@@ -255,7 +255,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 return; // Silently ignore messages from non-owners when in private mode
             }
         } catch (error) {
-            console.error('Error checking access mode:', error);
+            console.error('يا شيخ طفشت! ما عرفت هو فاتحها للكل ولا مقفلها على خوياه بس 🤬:', error);
             // Default to public mode if there's an error reading the file
         }
 
@@ -266,7 +266,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (quotedMessage?.stickerMessage) {
                     await simageCommand(sock, quotedMessage, chatId);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Please reply to a sticker with the .simage command to convert it.', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'رد على ستيكر عشان أحوله لك صورة يا فنان.', ...channelInfo });
                 }
                 break;
             }
@@ -277,7 +277,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.mute'):
                 const muteDuration = parseInt(userMessage.split(' ')[1]);
                 if (isNaN(muteDuration)) {
-                    await sock.sendMessage(chatId, { text: 'Please provide a valid number of minutes.\neg to mute 10 minutes\n.mute 10', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'ياخي حط رقم صاحي للدقايق. مثلاً: .mute 10 يعني تسكته 10 دقايق.', ...channelInfo });
                 } else {
                     await muteCommand(sock, chatId, senderId, muteDuration);
                 }
@@ -318,7 +318,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.mode'):
                 // Check if sender is the owner
                 if (!message.key.fromMe) {
-                    await sock.sendMessage(chatId, { text: 'Only bot owner can use this command!', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'قلت لك هذا الأمر للمطور وبس!', ...channelInfo });
                     return;
                 }
                 // Read current data first
@@ -326,8 +326,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 try {
                     data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
                 } catch (error) {
-                    console.error('Error reading access mode:', error);
-                    await sock.sendMessage(chatId, { text: 'Failed to read bot mode status', ...channelInfo });
+                    console.error('الظاهر إني أعميت! ماني قادر أقرأ وضع الدخول اللي حاطه ذا الأهبل 😵:', error);
+                    await sock.sendMessage(chatId, { text: 'خربت الدنيا، ما قدرت أعرف وش وضع البوت.', ...channelInfo });
                     return;
                 }
 
@@ -336,7 +336,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (!action) {
                     const currentMode = data.isPublic ? 'public' : 'private';
                     await sock.sendMessage(chatId, {
-                        text: `Current bot mode: *${currentMode}*\n\nUsage: .mode public/private\n\nExample:\n.mode public - Allow everyone to use bot\n.mode private - Restrict to owner only`,
+                        text: `وضع البوت الحين: *${currentMode}* (يعني ${currentMode === 'public' ? 'متاح للجميع يسولف معه 😏' : 'بس أنا والمطور 😌'})\n\nالاستخدام: .mode public/private\n\nمثال:\n.mode public - خل البوت خروف للكل\n.mode private - خله بس لك وللمطور`,
                         ...channelInfo
                     });
                     return;
@@ -344,7 +344,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
                 if (action !== 'public' && action !== 'private') {
                     await sock.sendMessage(chatId, {
-                        text: 'Usage: .mode public/private\n\nExample:\n.mode public - Allow everyone to use bot\n.mode private - Restrict to owner only',
+                        text: 'ياخي اكتب صح! الاستخدام: .mode public/private\n\nمثال:\n.mode public - خل البوت خروف للكل\n.mode private - خله بس لك وللمطور',
                         ...channelInfo
                     });
                     return;
@@ -357,10 +357,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     // Save updated data
                     fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
 
-                    await sock.sendMessage(chatId, { text: `Bot is now in *${action}* mode`, ...channelInfo });
+                    await sock.sendMessage(chatId, { text: `خلاص البوت صار على وضع *${action}* يالذيب.`, ...channelInfo });
                 } catch (error) {
-                    console.error('Error updating access mode:', error);
-                    await sock.sendMessage(chatId, { text: 'Failed to update bot access mode', ...channelInfo });
+                    console.error('النظام معصّب وما يبي يتغير! كأنه عجوز راسها يابس 👵🔥:', error);
+                    await sock.sendMessage(chatId, { text: 'عيا يتغير الوضع، مدري وش بلاه.', ...channelInfo });
                 }
                 break;
             case userMessage === '.owner':
@@ -370,7 +370,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (isSenderAdmin || message.key.fromMe) {
                     await tagAllCommand(sock, chatId, senderId, message);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Sorry, only group admins can use the .tagall command.', ...channelInfo }, {quoted: message});
+                    await sock.sendMessage(chatId, { text: 'معليش بس الكبارية (الأدمنز) هم اللي يقدرون يزعجون الكل.', ...channelInfo }, {quoted: message});
                 }
                 break;
             case userMessage.startsWith('.tag'):
@@ -381,14 +381,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.antilink'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, {
-                        text: 'This command can only be used in groups.',
+                        text: 'هذا الأمر ما يشتغل إلا في وكر الأفاعي (الجروبات).',
                         ...channelInfo
                     });
                     return;
                 }
                 if (!isBotAdmin) {
                     await sock.sendMessage(chatId, {
-                        text: 'Please make the bot an admin first.',
+                        text: 'خلني أدمن أول يا بطل، عشان أقدر أفرض سيطرتي.',
                         ...channelInfo
                     });
                     return;
@@ -412,7 +412,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (city) {
                     await weatherCommand(sock, chatId, city);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Please specify a city, e.g., .weather London', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'اكتب اسم مدينة يا ذكي، مثلاً .weather الرياض', ...channelInfo });
                 }
                 break;
             case userMessage === '.news':
@@ -425,7 +425,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.move'):
                 const position = parseInt(userMessage.split(' ')[1]);
                 if (isNaN(position)) {
-                    await sock.sendMessage(chatId, { text: 'Please provide a valid position number for Tic-Tac-Toe move.', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'حط رقم صاحي للحركة يا لاعب.', ...channelInfo });
                 } else {
                     tictactoeMove(sock, chatId, senderId, position);
                 }
@@ -441,7 +441,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (guessedLetter) {
                     guessLetter(sock, chatId, guessedLetter);
                 } else {
-                    sock.sendMessage(chatId, { text: 'Please guess a letter using .guess <letter>', ...channelInfo });
+                    sock.sendMessage(chatId, { text: 'خمن حرف يا فنان، استخدم .guess <حرف>', ...channelInfo });
                 }
                 break;
             case userMessage.startsWith('.trivia'):
@@ -452,7 +452,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (answer) {
                     answerTrivia(sock, chatId, answer);
                 } else {
-                    sock.sendMessage(chatId, { text: 'Please provide an answer using .answer <answer>', ...channelInfo });
+                    sock.sendMessage(chatId, { text: 'هات الإجابة يا دافور، استخدم .answer <إجابتك>', ...channelInfo });
                 }
                 break;
             case userMessage.startsWith('.compliment'):
@@ -518,10 +518,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     if (isSenderAdmin || message.key.fromMe) {
                         await welcomeCommand(sock, chatId, message);
                     } else {
-                        await sock.sendMessage(chatId, { text: 'Sorry, only group admins can use this command.', ...channelInfo });
+                        await sock.sendMessage(chatId, { text: 'هالأمر للكبار بس (الأدمنز).', ...channelInfo });
                     }
                 } else {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups.', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'هذا الأمر ما يشتغل إلا في الجروبات.', ...channelInfo });
                 }
                 break;
             case userMessage.startsWith('.goodbye'):
@@ -535,10 +535,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     if (isSenderAdmin || message.key.fromMe) {
                         await goodbyeCommand(sock, chatId, message);
                     } else {
-                        await sock.sendMessage(chatId, { text: 'Sorry, only group admins can use this command.', ...channelInfo });
+                        await sock.sendMessage(chatId, { text: 'هالأمر للكبار بس (الأدمنز).', ...channelInfo });
                     }
                 } else {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups.', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'هذا الأمر ما يشتغل إلا في الجروبات.', ...channelInfo });
                 }
                 break;
             case userMessage === '.git':
@@ -550,7 +550,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.antibadword'):
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups.', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'هذا الأمر ما يشتغل إلا في الجروبات.', ...channelInfo });
                     return;
                 }
 
@@ -559,7 +559,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 isBotAdmin = adminStatus.isBotAdmin;
 
                 if (!isBotAdmin) {
-                    await sock.sendMessage(chatId, { text: '*Bot must be admin to use this feature*', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: '*لازم أكون أدمن عشان أأدب قليلين الأدب*', ...channelInfo });
                     return;
                 }
 
@@ -567,14 +567,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.chatbot'):
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups.', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'هذا الأمر ما يشتغل إلا في الجروبات.', ...channelInfo });
                     return;
                 }
 
                 // Check if sender is admin or bot owner
                 const chatbotAdminStatus = await isAdmin(sock, chatId, senderId);
                 if (!chatbotAdminStatus.isSenderAdmin && !message.key.fromMe) {
-                    await sock.sendMessage(chatId, { text: '*Only admins or bot owner can use this command*', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: '*بس الكبارية (الأدمنز والمطور) اللي يقدرون يتحكمون فيني*', ...channelInfo });
                     return;
                 }
 
@@ -596,28 +596,28 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.ship':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups!', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'هذا الأمر ما يشتغل إلا في الجروبات يا ذكي!', ...channelInfo });
                     return;
                 }
                 await shipCommand(sock, chatId, message);
                 break;
             case userMessage === '.groupinfo' || userMessage === '.infogp' || userMessage === '.infogrupo':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups!', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'هذا الأمر ما يشتغل إلا في الجروبات يا ذكي!', ...channelInfo });
                     return;
                 }
                 await groupInfoCommand(sock, chatId, message);
                 break;
             case userMessage === '.resetlink' || userMessage === '.revoke' || userMessage === '.anularlink':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups!', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'هذا الأمر ما يشتغل إلا في الجروبات يا ذكي!', ...channelInfo });
                     return;
                 }
                 await resetlinkCommand(sock, chatId, senderId);
                 break;
             case userMessage === '.staff' || userMessage === '.admins' || userMessage === '.listadmin':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups!', ...channelInfo });
+                    await sock.sendMessage(chatId, { text: 'هذا الأمر ما يشتغل إلا في الجروبات يا ذكي!', ...channelInfo });
                     return;
                 }
                 await staffCommand(sock, chatId, message);
@@ -762,12 +762,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
                     if (!groupJid.endsWith('@g.us')) {
                         return await sock.sendMessage(chatId, {
-                            text: "❌ This command can only be used in a group."
+                            text: "❌ يا رجال هذا الأمر للجروبات وبس."
                         });
                     }
 
                     await sock.sendMessage(chatId, {
-                        text: `✅ Group JID: ${groupJid}`
+                        text: `✅ خذ يا مدير، هذا هوية الجروب: ${groupJid}`
                     }, {
                         quoted: message
                     });
@@ -790,11 +790,11 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await addCommandReaction(sock, message);
         }
     } catch (error) {
-        console.error('❌ Error in message handler:', error.message);
+        console.error('❌ خربت السالفة كلها! شوف هالكارثة يا مدير 🌋:', error.message);
         // Only try to send error message if we have a valid chatId
         if (chatId) {
             await sock.sendMessage(chatId, {
-                text: '❌ Failed to process command!',
+                text: '❌ فشلت المهمة يا كابتن! الأمر خربان.',
                 ...channelInfo
             });
         }
@@ -874,7 +874,7 @@ async function handleGroupParticipantUpdate(sock, update) {
             }
         }
     } catch (error) {
-        console.error('Error in handleGroupParticipantUpdate:', error);
+        console.error('الجروب ذا مسكون شكله! كل ما بغيت أرحب بواحد ولا أودع الثاني تخرب الدنيا 💀:', error);
     }
 }
 
