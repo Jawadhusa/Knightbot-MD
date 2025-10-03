@@ -117,13 +117,13 @@ const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/
 const settingsCommand = require('./commands/settings');
 const soraCommand = require('./commands/sora');
 
-// Global settings
+// الإعدادات العامة
 global.packname = settings.packname;
 global.author = settings.author;
 global.channelLink = "https://whatsapp.com/channel/0029Va90zAnIHphOuO8Msp3A";
 global.ytch = "Mr Unique Hacker";
 
-// Add this near the top of main.js with other global configurations
+// أضف هذا بالقرب من أعلى main.js مع التكوينات العالمية الأخرى
 const channelInfo = {
     contextInfo: {
         forwardingScore: 1,
@@ -144,15 +144,15 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const message = messages[0];
         if (!message?.message) return;
 
-        // Handle autoread functionality
+        // التعامل مع وظيفة القراءة التلقائية
         await handleAutoread(sock, message);
 
-        // Store message for antidelete feature
+        // تخزين الرسالة لميزة منع الحذف
         if (message.message) {
             storeMessage(sock, message);
         }
 
-        // Handle message revocation
+        // التعامل مع سحب الرسائل
         if (message.message?.protocolMessage?.type === 0) {
             await handleMessageRevocation(sock, message);
             return;
@@ -172,50 +172,50 @@ async function handleMessages(sock, messageUpdate, printLog) {
             ''
         ).toLowerCase().replace(/\.\s+/g, '.').trim();
 
-        // Preserve raw message for commands like .tag that need original casing
+        // احتفظ بالرسالة الأصلية للأوامر مثل .tag التي تحتاج إلى حالة الأحرف الأصلية
         const rawText = message.message?.conversation?.trim() ||
             message.message?.extendedTextMessage?.text?.trim() ||
             message.message?.imageMessage?.caption?.trim() ||
             message.message?.videoMessage?.caption?.trim() ||
             '';
 
-        // Only log command usage
+        // سجل استخدام الأوامر فقط
         if (userMessage.startsWith('.')) {
-            console.log(`📝 Command used in ${isGroup ? 'group' : 'private'}: ${userMessage}`);
+            console.log(`📝 تم استخدام الأمر في ${isGroup ? 'المجموعة' : 'الخاص'}: ${userMessage}`);
         }
-        // Enforce private mode BEFORE any replies (except owner/sudo)
+        // فرض الوضع الخاص قبل أي ردود (باستثناء المالك/السودو)
         try {
             const data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
-            // Allow owner/sudo to use bot even in private mode
+            // اسمح للمالك/السودو باستخدام البوت حتى في الوضع الخاص
             if (!data.isPublic && !message.key.fromMe && !senderIsSudo) {
-                return; // Silently ignore messages from non-owners when in private mode
+                return; // تجاهل الرسائل بصمت من غير المالكين عندما يكون في الوضع الخاص
             }
         } catch (error) {
-            console.error('Error checking access mode:', error);
-            // Default to public mode if there's an error reading the file
+            console.error('خطأ في التحقق من وضع الوصول:', error);
+            // افتراض الوضع العام إذا كان هناك خطأ في قراءة الملف
         }
-        // Check if user is banned (skip ban check for unban command)
+        // تحقق مما إذا كان المستخدم محظورًا (تجاوز التحقق من الحظر لأمر إلغاء الحظر)
         if (isBanned(senderId) && !userMessage.startsWith('.unban')) {
-            // Only respond occasionally to avoid spam
+            // قم بالرد أحيانًا فقط لتجنب البريد العشوائي
             if (Math.random() < 0.1) {
                 await sock.sendMessage(chatId, {
-                    text: '❌ You are banned from using the bot. Contact an admin to get unbanned.',
+                    text: '❌ أنت محظور من استخدام البوت. اتصل بمسؤول لإلغاء حظرك.',
                     ...channelInfo
                 });
             }
             return;
         }
 
-        // First check if it's a game move
+        // أولاً تحقق مما إذا كانت حركة لعبة
         if (/^[1-9]$/.test(userMessage) || userMessage.toLowerCase() === 'surrender') {
             await handleTicTacToeMove(sock, chatId, senderId, userMessage);
             return;
         }
 
-        /*  // Basic message response in private chat
+        /*  // رد رسالة أساسي في الدردشة الخاصة
           if (!isGroup && (userMessage === 'hi' || userMessage === 'hello' || userMessage === 'bot' || userMessage === 'hlo' || userMessage === 'hey' || userMessage === 'bro')) {
               await sock.sendMessage(chatId, {
-                  text: 'Hi, How can I help you?\nYou can use .menu for more info and commands.',
+                  text: 'مرحباً، كيف يمكنني مساعدتك؟\nيمكنك استخدام .menu للمزيد من المعلومات والأوامر.',
                   ...channelInfo
               });
               return;
@@ -223,20 +223,20 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         if (!message.key.fromMe) incrementMessageCount(chatId, senderId);
 
-        // Check for bad words FIRST, before ANY other processing
+        // تحقق من الكلمات البذيئة أولاً، قبل أي معالجة أخرى
         if (isGroup && userMessage) {
             await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
             
             await Antilink(message, sock);
         }
 
-        // PM blocker: block non-owner DMs when enabled (do not ban)
+        // مانع الرسائل الخاصة: حظر الرسائل الخاصة من غير المالكين عند التمكين (لا يحظر عالميًا)
         if (!isGroup && !message.key.fromMe && !senderIsSudo) {
             try {
                 const pmState = readPmBlockerState();
                 if (pmState.enabled) {
-                    // Inform user, delay, then block without banning globally
-                    await sock.sendMessage(chatId, { text: pmState.message || 'Private messages are blocked. Please contact the owner in groups only.' });
+                    // أبلغ المستخدم، انتظر، ثم احظر دون حظر عالمي
+                    await sock.sendMessage(chatId, { text: pmState.message || 'الرسائل الخاصة محظورة. يرجى الاتصال بالمالك في المجموعات فقط.' });
                     await new Promise(r => setTimeout(r, 1500));
                     try { await sock.updateBlockStatus(chatId, 'block'); } catch (e) { }
                     return;
@@ -244,13 +244,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
             } catch (e) { }
         }
 
-        // Then check for command prefix
+        // ثم تحقق من بادئة الأمر
         if (!userMessage.startsWith('.')) {
-            // Show typing indicator if autotyping is enabled
+            // أظهر مؤشر الكتابة إذا كانت الكتابة التلقائية ممكّنة
             await handleAutotypingForMessage(sock, chatId, userMessage);
 
             if (isGroup) {
-                // Process non-command messages first
+                // عالج الرسائل غير الأوامر أولاً
                 await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
                 await handleTagDetection(sock, chatId, message, senderId);
                 await handleMentionDetection(sock, chatId, message);
@@ -258,25 +258,25 @@ async function handleMessages(sock, messageUpdate, printLog) {
             return;
         }
 
-        // List of admin commands
+        // قائمة أوامر المشرفين
         const adminCommands = ['.mute', '.unmute', '.ban', '.unban', '.promote', '.demote', '.kick', '.tagall', '.tagnotadmin', '.hidetag', '.antilink', '.antitag', '.setgdesc', '.setgname', '.setgpp'];
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
-        // List of owner commands
+        // قائمة أوامر المالك
         const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.autotyping', '.autoread', '.pmblocker'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
         let isBotAdmin = false;
 
-        // Check admin status only for admin commands in groups
+        // تحقق من حالة المشرف فقط لأوامر المشرفين في المجموعات
         if (isGroup && isAdminCommand) {
             const adminStatus = await isAdmin(sock, chatId, senderId, message);
             isSenderAdmin = adminStatus.isSenderAdmin;
             isBotAdmin = adminStatus.isBotAdmin;
 
             if (!isBotAdmin) {
-                await sock.sendMessage(chatId, { text: 'Please make the bot an admin to use admin commands.', ...channelInfo }, { quoted: message });
+                await sock.sendMessage(chatId, { text: 'الرجاء جعل البوت مشرفًا لاستخدام أوامر المشرفين.', ...channelInfo }, { quoted: message });
                 return;
             }
 
@@ -290,7 +290,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             ) {
                 if (!isSenderAdmin && !message.key.fromMe) {
                     await sock.sendMessage(chatId, {
-                        text: 'Sorry, only group admins can use this command.',
+                        text: 'عذراً، يمكن فقط لمشرفي المجموعة استخدام هذا الأمر.',
                         ...channelInfo
                     }, { quoted: message });
                     return;
@@ -298,25 +298,25 @@ async function handleMessages(sock, messageUpdate, printLog) {
             }
         }
 
-        // Check owner status for owner commands
+        // تحقق من حالة المالك لأوامر المالك
         if (isOwnerCommand) {
-            // Get owner number from settings
+            // احصل على رقم المالك من الإعدادات
             const ownerJid = settings.ownerNumber + "@s.whatsapp.net";
             
-            // Check if sender is owner (direct match or LID format)
+            // تحقق مما إذا كان المرسل هو المالك (تطابق مباشر أو تنسيق LID)
             const isOwner = message.key.fromMe || 
                            senderId === ownerJid || 
                            (senderId && !senderId.includes('@s.whatsapp.net') && !senderId.includes('@g.us') && senderId.includes(settings.ownerNumber)) ||
                            senderIsSudo;
             
             if (!isOwner) {
-                await sock.sendMessage(chatId, { text: '❌ This command is only available for the owner or sudo!' }, { quoted: message });
+                await sock.sendMessage(chatId, { text: '❌ هذا الأمر متاح فقط للمالك أو السودو!' }, { quoted: message });
                 return;
             }
         }
 
-        // Command handlers - Execute commands immediately without waiting for typing indicator
-        // We'll show typing indicator after command execution if needed
+        // معالجات الأوامر - تنفيذ الأوامر على الفور دون انتظار مؤشر الكتابة
+        // سنظهر مؤشر الكتابة بعد تنفيذ الأمر إذا لزم الأمر
         let commandExecuted = false;
 
         switch (true) {
@@ -325,7 +325,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (quotedMessage?.stickerMessage) {
                     await simageCommand(sock, quotedMessage, chatId);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Please reply to a sticker with the .simage command to convert it.', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'الرجاء الرد على ملصق باستخدام الأمر .simage لتحويله.', ...channelInfo }, { quoted: message });
                 }
                 commandExecuted = true;
                 break;
@@ -340,7 +340,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     const muteArg = parts[1];
                     const muteDuration = muteArg !== undefined ? parseInt(muteArg, 10) : undefined;
                     if (muteArg !== undefined && (isNaN(muteDuration) || muteDuration <= 0)) {
-                        await sock.sendMessage(chatId, { text: 'Please provide a valid number of minutes or use .mute with no number to mute immediately.', ...channelInfo }, { quoted: message });
+                        await sock.sendMessage(chatId, { text: 'الرجاء تقديم عدد صحيح من الدقائق أو استخدام .mute بدون رقم لكتم الصوت فورًا.', ...channelInfo }, { quoted: message });
                     } else {
                         await muteCommand(sock, chatId, senderId, message, muteDuration);
                     }
@@ -386,27 +386,27 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await settingsCommand(sock, chatId, message);
                 break;
             case userMessage.startsWith('.mode'):
-                // Check if sender is the owner
+                // تحقق مما إذا كان المرسل هو المالك
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Only bot owner can use this command!', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن لمالك البوت فقط استخدام هذا الأمر!', ...channelInfo }, { quoted: message });
                     return;
                 }
-                // Read current data first
+                // اقرأ البيانات الحالية أولاً
                 let data;
                 try {
                     data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
                 } catch (error) {
-                    console.error('Error reading access mode:', error);
-                    await sock.sendMessage(chatId, { text: 'Failed to read bot mode status', ...channelInfo });
+                    console.error('خطأ في قراءة وضع الوصول:', error);
+                    await sock.sendMessage(chatId, { text: 'فشل في قراءة حالة وضع البوت', ...channelInfo });
                     return;
                 }
 
                 const action = userMessage.split(' ')[1]?.toLowerCase();
-                // If no argument provided, show current status
+                // إذا لم يتم تقديم وسيطة، أظهر الحالة الحالية
                 if (!action) {
-                    const currentMode = data.isPublic ? 'public' : 'private';
+                    const currentMode = data.isPublic ? 'عام' : 'خاص';
                     await sock.sendMessage(chatId, {
-                        text: `Current bot mode: *${currentMode}*\n\nUsage: .mode public/private\n\nExample:\n.mode public - Allow everyone to use bot\n.mode private - Restrict to owner only`,
+                        text: `الوضع الحالي للبوت: *${currentMode}*\n\nالاستخدام: .mode عام/خاص\n\nمثال:\n.mode عام - السماح للجميع باستخدام البوت\n.mode خاص - التقييد على المالك فقط`,
                         ...channelInfo
                     }, { quoted: message });
                     return;
@@ -414,28 +414,28 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
                 if (action !== 'public' && action !== 'private') {
                     await sock.sendMessage(chatId, {
-                        text: 'Usage: .mode public/private\n\nExample:\n.mode public - Allow everyone to use bot\n.mode private - Restrict to owner only',
+                        text: 'الاستخدام: .mode عام/خاص\n\nمثال:\n.mode عام - السماح للجميع باستخدام البوت\n.mode خاص - التقييد على المالك فقط',
                         ...channelInfo
                     }, { quoted: message });
                     return;
                 }
 
                 try {
-                    // Update access mode
+                    // تحديث وضع الوصول
                     data.isPublic = action === 'public';
 
-                    // Save updated data
+                    // حفظ البيانات المحدثة
                     fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
 
-                    await sock.sendMessage(chatId, { text: `Bot is now in *${action}* mode`, ...channelInfo });
+                    await sock.sendMessage(chatId, { text: `البوت الآن في الوضع *${action === 'public' ? 'العام' : 'الخاص'}*`, ...channelInfo });
                 } catch (error) {
-                    console.error('Error updating access mode:', error);
-                    await sock.sendMessage(chatId, { text: 'Failed to update bot access mode', ...channelInfo });
+                    console.error('خطأ في تحديث وضع الوصول:', error);
+                    await sock.sendMessage(chatId, { text: 'فشل في تحديث وضع الوصول للبوت', ...channelInfo });
                 }
                 break;
             case userMessage.startsWith('.anticall'):
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Only owner/sudo can use anticall.' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن للمالك/السودو فقط استخدام منع المكالمات.' }, { quoted: message });
                     break;
                 }
                 {
@@ -445,7 +445,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.pmblocker'):
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Only owner/sudo can use pmblocker.' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن للمالك/السودو فقط استخدام مانع الرسائل الخاصة.' }, { quoted: message });
                     commandExecuted = true;
                     break;
                 }
@@ -462,7 +462,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (isSenderAdmin || message.key.fromMe) {
                     await tagAllCommand(sock, chatId, senderId, message);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Sorry, only group admins can use the .tagall command.', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'عذراً، يمكن فقط لمشرفي المجموعة استخدام الأمر .tagall.', ...channelInfo }, { quoted: message });
                 }
                 break;
             case userMessage === '.tagnotadmin':
@@ -476,21 +476,21 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 }
                 break;
             case userMessage.startsWith('.tag'):
-                const messageText = rawText.slice(4).trim();  // use rawText here, not userMessage
+                const messageText = rawText.slice(4).trim();  // استخدم rawText هنا، وليس userMessage
                 const replyMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage || null;
                 await tagCommand(sock, chatId, senderId, messageText, replyMessage, message);
                 break;
             case userMessage.startsWith('.antilink'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, {
-                        text: 'This command can only be used in groups.',
+                        text: 'يمكن استخدام هذا الأمر في المجموعات فقط.',
                         ...channelInfo
                     }, { quoted: message });
                     return;
                 }
                 if (!isBotAdmin) {
                     await sock.sendMessage(chatId, {
-                        text: 'Please make the bot an admin first.',
+                        text: 'الرجاء جعل البوت مشرفًا أولاً.',
                         ...channelInfo
                     }, { quoted: message });
                     return;
@@ -500,14 +500,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.antitag'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, {
-                        text: 'This command can only be used in groups.',
+                        text: 'يمكن استخدام هذا الأمر في المجموعات فقط.',
                         ...channelInfo
                     }, { quoted: message });
                     return;
                 }
                 if (!isBotAdmin) {
                     await sock.sendMessage(chatId, {
-                        text: 'Please make the bot an admin first.',
+                        text: 'الرجاء جعل البوت مشرفًا أولاً.',
                         ...channelInfo
                     }, { quoted: message });
                     return;
@@ -531,7 +531,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (city) {
                     await weatherCommand(sock, chatId, message, city);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Please specify a city, e.g., .weather London', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'الرجاء تحديد مدينة، مثال: .weather لندن', ...channelInfo }, { quoted: message });
                 }
                 break;
             case userMessage === '.news':
@@ -544,7 +544,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.move'):
                 const position = parseInt(userMessage.split(' ')[1]);
                 if (isNaN(position)) {
-                    await sock.sendMessage(chatId, { text: 'Please provide a valid position number for Tic-Tac-Toe move.', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'الرجاء تقديم رقم موقع صالح لحركة تيك تاك تو.', ...channelInfo }, { quoted: message });
                 } else {
                     tictactoeMove(sock, chatId, senderId, position);
                 }
@@ -560,7 +560,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (guessedLetter) {
                     guessLetter(sock, chatId, guessedLetter);
                 } else {
-                    sock.sendMessage(chatId, { text: 'Please guess a letter using .guess <letter>', ...channelInfo }, { quoted: message });
+                    sock.sendMessage(chatId, { text: 'الرجاء تخمين حرف باستخدام .guess <حرف>', ...channelInfo }, { quoted: message });
                 }
                 break;
             case userMessage.startsWith('.trivia'):
@@ -571,7 +571,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (answer) {
                     answerTrivia(sock, chatId, answer);
                 } else {
-                    sock.sendMessage(chatId, { text: 'Please provide an answer using .answer <answer>', ...channelInfo }, { quoted: message });
+                    sock.sendMessage(chatId, { text: 'الرجاء تقديم إجابة باستخدام .answer <إجابة>', ...channelInfo }, { quoted: message });
                 }
                 break;
             case userMessage.startsWith('.compliment'):
@@ -641,7 +641,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.welcome'):
                 if (isGroup) {
-                    // Check admin status if not already checked
+                    // تحقق من حالة المشرف إذا لم يتم التحقق منها بالفعل
                     if (!isSenderAdmin) {
                         const adminStatus = await isAdmin(sock, chatId, senderId);
                         isSenderAdmin = adminStatus.isSenderAdmin;
@@ -650,15 +650,15 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     if (isSenderAdmin || message.key.fromMe) {
                         await welcomeCommand(sock, chatId, message);
                     } else {
-                        await sock.sendMessage(chatId, { text: 'Sorry, only group admins can use this command.', ...channelInfo }, { quoted: message });
+                        await sock.sendMessage(chatId, { text: 'عذراً، يمكن فقط لمشرفي المجموعة استخدام هذا الأمر.', ...channelInfo }, { quoted: message });
                     }
                 } else {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups.', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن استخدام هذا الأمر في المجموعات فقط.', ...channelInfo }, { quoted: message });
                 }
                 break;
             case userMessage.startsWith('.goodbye'):
                 if (isGroup) {
-                    // Check admin status if not already checked
+                    // تحقق من حالة المشرف إذا لم يتم التحقق منها بالفعل
                     if (!isSenderAdmin) {
                         const adminStatus = await isAdmin(sock, chatId, senderId);
                         isSenderAdmin = adminStatus.isSenderAdmin;
@@ -667,10 +667,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     if (isSenderAdmin || message.key.fromMe) {
                         await goodbyeCommand(sock, chatId, message);
                     } else {
-                        await sock.sendMessage(chatId, { text: 'Sorry, only group admins can use this command.', ...channelInfo }, { quoted: message });
+                        await sock.sendMessage(chatId, { text: 'عذراً، يمكن فقط لمشرفي المجموعة استخدام هذا الأمر.', ...channelInfo }, { quoted: message });
                     }
                 } else {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups.', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن استخدام هذا الأمر في المجموعات فقط.', ...channelInfo }, { quoted: message });
                 }
                 break;
             case userMessage === '.git':
@@ -682,7 +682,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.antibadword'):
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups.', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن استخدام هذا الأمر في المجموعات فقط.', ...channelInfo }, { quoted: message });
                     return;
                 }
 
@@ -691,7 +691,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 isBotAdmin = adminStatus.isBotAdmin;
 
                 if (!isBotAdmin) {
-                    await sock.sendMessage(chatId, { text: '*Bot must be admin to use this feature*', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*يجب أن يكون البوت مشرفًا لاستخدام هذه الميزة*', ...channelInfo }, { quoted: message });
                     return;
                 }
 
@@ -699,14 +699,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.chatbot'):
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups.', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن استخدام هذا الأمر في المجموعات فقط.', ...channelInfo }, { quoted: message });
                     return;
                 }
 
-                // Check if sender is admin or bot owner
+                // تحقق مما إذا كان المرسل مشرفًا أو مالك البوت
                 const chatbotAdminStatus = await isAdmin(sock, chatId, senderId);
                 if (!chatbotAdminStatus.isSenderAdmin && !message.key.fromMe) {
-                    await sock.sendMessage(chatId, { text: '*Only admins or bot owner can use this command*', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: '*يمكن للمشرفين أو مالك البوت فقط استخدام هذا الأمر*', ...channelInfo }, { quoted: message });
                     return;
                 }
 
@@ -728,28 +728,28 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.ship':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups!', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن استخدام هذا الأمر في المجموعات فقط!', ...channelInfo }, { quoted: message });
                     return;
                 }
                 await shipCommand(sock, chatId, message);
                 break;
             case userMessage === '.groupinfo' || userMessage === '.infogp' || userMessage === '.infogrupo':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups!', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن استخدام هذا الأمر في المجموعات فقط!', ...channelInfo }, { quoted: message });
                     return;
                 }
                 await groupInfoCommand(sock, chatId, message);
                 break;
             case userMessage === '.resetlink' || userMessage === '.revoke' || userMessage === '.anularlink':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups!', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن استخدام هذا الأمر في المجموعات فقط!', ...channelInfo }, { quoted: message });
                     return;
                 }
                 await resetlinkCommand(sock, chatId, senderId);
                 break;
             case userMessage === '.staff' || userMessage === '.admins' || userMessage === '.listadmin':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'This command can only be used in groups!', ...channelInfo }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'يمكن استخدام هذا الأمر في المجموعات فقط!', ...channelInfo }, { quoted: message });
                     return;
                 }
                 await staffCommand(sock, chatId, message);
@@ -836,7 +836,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await handleAntideleteCommand(sock, chatId, message, antideleteMatch);
                 break;
             case userMessage === '.surrender':
-                // Handle surrender command for tictactoe game
+                // التعامل مع أمر الاستسلام للعبة تيك تاك تو
                 await handleTicTacToeMove(sock, chatId, senderId, 'surrender');
                 break;
             case userMessage === '.cleartmp':
@@ -1029,7 +1029,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     await animeCommand(sock, chatId, message, args);
                 }
                 break;
-            // animu aliases
+            // اسماء مستعارة لـ animu
             case userMessage.startsWith('.nom'):
             case userMessage.startsWith('.poke'):
             case userMessage.startsWith('.cry'):
@@ -1101,8 +1101,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             default:
                 if (isGroup) {
-                    // Handle non-command group messages
-                    if (userMessage) {  // Make sure there's a message
+                    // التعامل مع رسائل المجموعة غير الأوامر
+                    if (userMessage) {  // تأكد من وجود رسالة
                         await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
                     }
                     await handleTagDetection(sock, chatId, message, senderId);
@@ -1112,39 +1112,39 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
         }
 
-        // If a command was executed, show typing status after command execution
+        // إذا تم تنفيذ أمر، أظهر حالة الكتابة بعد تنفيذ الأمر
         if (commandExecuted !== false) {
-            // Command was executed, now show typing status after command execution
+            // تم تنفيذ الأمر، الآن أظهر حالة الكتابة بعد تنفيذ الأمر
             await showTypingAfterCommand(sock, chatId);
         }
 
-        // Function to handle .groupjid command
+        // دالة للتعامل مع أمر .groupjid
         async function groupJidCommand(sock, chatId, message) {
             const groupJid = message.key.remoteJid;
 
             if (!groupJid.endsWith('@g.us')) {
                 return await sock.sendMessage(chatId, {
-                    text: "❌ This command can only be used in a group."
+                    text: "❌ يمكن استخدام هذا الأمر في مجموعة فقط."
                 });
             }
 
             await sock.sendMessage(chatId, {
-                text: `✅ Group JID: ${groupJid}`
+                text: `✅ معرف المجموعة: ${groupJid}`
             }, {
                 quoted: message
             });
         }
 
         if (userMessage.startsWith('.')) {
-            // After command is processed successfully
+            // بعد معالجة الأمر بنجاح
             await addCommandReaction(sock, message);
         }
     } catch (error) {
-        console.error('❌ Error in message handler:', error.message);
-        // Only try to send error message if we have a valid chatId
+        console.error('❌ خطأ في معالج الرسائل:', error.message);
+        // حاول فقط إرسال رسالة الخطأ إذا كان لدينا معرف دردشة صالح
         if (chatId) {
             await sock.sendMessage(chatId, {
-                text: '❌ Failed to process command!',
+                text: '❌ فشل في معالجة الأمر!',
                 ...channelInfo
             });
         }
@@ -1155,47 +1155,47 @@ async function handleGroupParticipantUpdate(sock, update) {
     try {
         const { id, participants, action, author } = update;
 
-        // Check if it's a group
+        // تحقق مما إذا كانت مجموعة
         if (!id.endsWith('@g.us')) return;
 
-        // Respect bot mode: only announce promote/demote in public mode
+        // احترم وضع البوت: أعلن عن الترقية/التخفيض فقط في الوضع العام
         let isPublic = true;
         try {
             const modeData = JSON.parse(fs.readFileSync('./data/messageCount.json'));
             if (typeof modeData.isPublic === 'boolean') isPublic = modeData.isPublic;
         } catch (e) {
-            // If reading fails, default to public behavior
+            // إذا فشلت القراءة، افترض السلوك العام
         }
 
-        // Handle promotion events
+        // التعامل مع أحداث الترقية
         if (action === 'promote') {
             if (!isPublic) return;
             await handlePromotionEvent(sock, id, participants, author);
             return;
         }
 
-        // Handle demotion events
+        // التعامل مع أحداث التخفيض
         if (action === 'demote') {
             if (!isPublic) return;
             await handleDemotionEvent(sock, id, participants, author);
             return;
         }
 
-        // Handle join events
+        // التعامل مع أحداث الانضمام
         if (action === 'add') {
             await handleJoinEvent(sock, id, participants);
         }
 
-        // Handle leave events
+        // التعامل مع أحداث المغادرة
         if (action === 'remove') {
             await handleLeaveEvent(sock, id, participants);
         }
     } catch (error) {
-        console.error('Error in handleGroupParticipantUpdate:', error);
+        console.error('خطأ في handleGroupParticipantUpdate:', error);
     }
 }
 
-// Instead, export the handlers along with handleMessages
+// بدلاً من ذلك، قم بتصدير المعالجات جنبًا إلى جنب مع handleMessages
 module.exports = {
     handleMessages,
     handleGroupParticipantUpdate,
